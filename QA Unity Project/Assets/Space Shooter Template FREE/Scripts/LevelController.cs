@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,6 +20,16 @@ public class LevelController : MonoBehaviour {
     //Serializable classes implements
     public EnemyWaves[] enemyWaves; 
 
+    [Header("Level 2 Expansion")]
+    [Tooltip("Enable or disable the second level")]
+    public bool enableLevel2 = true;
+    
+    [Tooltip("Delay in seconds after Level 1 finishes before Level 2 starts")]
+    public float delayBeforeLevel2 = 5f;
+    
+    [Tooltip("Wave configuration for Level 2 (harder enemies, shields, boss)")]
+    public EnemyWaves[] enemyWavesLevel2;
+
     public GameObject powerUp;
     public float timeForNewPowerup;
     public GameObject[] planets;
@@ -32,13 +42,39 @@ public class LevelController : MonoBehaviour {
     private void Start()
     {
         mainCamera = Camera.main;
-        //for each element in 'enemyWaves' array creating coroutine which generates the wave
-        for (int i = 0; i<enemyWaves.Length; i++) 
-        {
-            StartCoroutine(CreateEnemyWave(enemyWaves[i].timeToStart, enemyWaves[i].wave));
-        }
+        StartCoroutine(LevelOrchestrator());
         StartCoroutine(PowerupBonusCreation());
         StartCoroutine(PlanetsCreation());
+    }
+
+    IEnumerator LevelOrchestrator()
+    {
+        // --- LEVEL 1 ---
+        float maxLevel1Time = 0f;
+        if (enemyWaves != null)
+        {
+            for (int i = 0; i < enemyWaves.Length; i++) 
+            {
+                StartCoroutine(CreateEnemyWave(enemyWaves[i].timeToStart, enemyWaves[i].wave));
+                if (enemyWaves[i].timeToStart > maxLevel1Time)
+                    maxLevel1Time = enemyWaves[i].timeToStart;
+            }
+        }
+
+        // --- LEVEL 2 ---
+        if (enableLevel2)
+        {
+            // Wait for Level 1 waves to spawn + an extra delay to allow the player to clear them
+            yield return new WaitForSeconds(maxLevel1Time + delayBeforeLevel2 + 10f); // 10s extra clearance time
+            
+            if (enemyWavesLevel2 != null)
+            {
+                for (int i = 0; i < enemyWavesLevel2.Length; i++) 
+                {
+                    StartCoroutine(CreateEnemyWave(enemyWavesLevel2[i].timeToStart, enemyWavesLevel2[i].wave));
+                }
+            }
+        }
     }
     
     //Create a new wave after a delay
