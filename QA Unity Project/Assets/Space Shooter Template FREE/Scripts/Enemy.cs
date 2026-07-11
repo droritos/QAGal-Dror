@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +10,12 @@ public class Enemy : MonoBehaviour {
     #region FIELDS
     [Tooltip("Health points in integer")]
     public int health;
+
+    [Tooltip("Shield points in integer")]
+    public int shield;
+
+    [Tooltip("Visual object for the shield")]
+    public GameObject shieldVisual;
 
     [Tooltip("Enemy's projectile prefab")]
     public GameObject Projectile;
@@ -39,7 +45,31 @@ public class Enemy : MonoBehaviour {
     //method of getting damage for the 'Enemy'
     public void GetDamage(int damage) 
     {
-        health -= damage;           //reducing health for damage value, if health is less than 0, starting destruction procedure
+        if (shield > 0)
+        {
+            shield -= damage;
+            if (shield < 0)
+            {
+                damage = -shield;
+                shield = 0;
+            }
+            else
+            {
+                damage = 0;
+            }
+            
+            // Turn off visual if shield is destroyed
+            if (shield <= 0 && shieldVisual != null)
+            {
+                shieldVisual.SetActive(false);
+            }
+        }
+
+        if (damage > 0)
+        {
+            health -= damage;           //reducing health for damage value, if health is less than 0, starting destruction procedure
+        }
+
         if (health <= 0)
             Destruction();
         else
