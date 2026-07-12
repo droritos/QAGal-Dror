@@ -2,13 +2,18 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.SceneManagement;
 
 public class SortingOrderPlayModeTests
 {
     [UnityTest]
     public IEnumerator PlayerAndEnemies_RenderInFrontOfBackground()
     {
+        // Load the actual game scene so the background exists!
+        SceneManager.LoadScene("Demo_Scene");
+
         // Give the scene a moment to initialize
+        yield return null;
         yield return null;
 
         // Try to find the Background and Player
