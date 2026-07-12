@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -93,6 +93,9 @@ public class PlayerShooting : MonoBehaviour {
 
     void CreateLazerShot(GameObject lazer, Vector3 pos, Vector3 rot) //translating 'pooled' lazer shot to the defined position in the defined rotation
     {
-        Instantiate(lazer, pos, Quaternion.Euler(rot));
+        GameObject projectile = PoolingController.instance.GetPoolingObject(lazer);
+        projectile.transform.position = pos;
+        projectile.transform.rotation = Quaternion.Euler(rot);
+        projectile.SetActive(true);
     }
 }

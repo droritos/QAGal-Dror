@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class Bonus : MonoBehaviour {
 
@@ -11,7 +11,7 @@ public class Bonus : MonoBehaviour {
             {
                 PlayerShooting.instance.weaponPower++;
             }
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

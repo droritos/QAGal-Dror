@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -48,8 +48,9 @@ public class FollowThePath : MonoBehaviour {
                 if (loop)                                   //when loop is set, moving to the path starting point; if not, destroying or deactivating the 'Enemy'
                     currentPathPercent = 0;
                 else
-                {
-                    Destroy(gameObject);           
+                if (!loop) {
+                    gameObject.SetActive(false);           
+                    return;
                 }
             }
         }

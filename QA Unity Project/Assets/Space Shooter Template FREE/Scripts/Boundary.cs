@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,10 +30,10 @@ public class Boundary : MonoBehaviour {
     {        
         if (collision.tag == "Projectile")
         {
-            Destroy(collision.gameObject);
+            collision.gameObject.SetActive(false);
         }
         else if (collision.tag == "Bonus") 
-            Destroy(collision.gameObject); 
+            collision.gameObject.SetActive(false); 
     }
 
 }

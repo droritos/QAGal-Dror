@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,7 +35,7 @@ public class Projectile : MonoBehaviour {
 
     void Destruction() 
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
 

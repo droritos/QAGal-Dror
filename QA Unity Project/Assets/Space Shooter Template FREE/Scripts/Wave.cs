@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -60,7 +60,9 @@ public class Wave : MonoBehaviour {
         for (int i = 0; i < count; i++) 
         {
             GameObject newEnemy;
-            newEnemy = Instantiate(enemy, enemy.transform.position, Quaternion.identity);
+            newEnemy = PoolingController.instance.GetPoolingObject(enemy);
+            newEnemy.transform.position = enemy.transform.position;
+            newEnemy.transform.rotation = Quaternion.identity;
             FollowThePath followComponent = newEnemy.GetComponent<FollowThePath>(); 
             followComponent.path = pathPoints;         
             followComponent.speed = speed;        
@@ -80,12 +82,15 @@ public class Wave : MonoBehaviour {
             StartCoroutine(CreateEnemyWave());
         }
         else if (!Loop)
-            Destroy(gameObject); 
+            gameObject.SetActive(false); 
     }
 
     void OnDrawGizmos()  
     {
-        DrawPath(pathPoints);  
+        if (pathPoints != null && pathPoints.Length >= 2)
+        {
+            DrawPath(pathPoints);  
+        }
     }
 
     void DrawPath(Transform[] path) //drawing the path in the Editor

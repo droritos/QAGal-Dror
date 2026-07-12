@@ -54,7 +54,10 @@ public class Enemy : MonoBehaviour {
     {
         if (Random.value < (float)shotChance / 100)                             //if random value less than shot probability, making a shot
         {                         
-            Instantiate(Projectile,  gameObject.transform.position, Quaternion.identity);             
+            GameObject proj = PoolingController.instance.GetPoolingObject(Projectile);
+            proj.transform.position = gameObject.transform.position;
+            proj.transform.rotation = Quaternion.identity;
+            proj.SetActive(true);
         }
     }
 
@@ -89,7 +92,15 @@ public class Enemy : MonoBehaviour {
         if (health <= 0)
             Destruction();
         else
-            Instantiate(hitEffect,transform.position,Quaternion.identity,transform);
+        {
+            if (hitEffect != null && PoolingController.instance != null)
+            {
+                GameObject hit = PoolingController.instance.GetPoolingObject(hitEffect);
+                hit.transform.position = transform.position;
+                hit.transform.rotation = Quaternion.identity;
+                hit.SetActive(true);
+            }
+        }
     }    
 
     //if 'Enemy' collides 'Player', 'Player' gets the damage equal to projectile's damage value
@@ -107,7 +118,13 @@ public class Enemy : MonoBehaviour {
     //method of destroying the 'Enemy'
     void Destruction()                           
     {        
-        Instantiate(destructionVFX, transform.position, Quaternion.identity); 
-        Destroy(gameObject);
+        if (destructionVFX != null && PoolingController.instance != null)
+        {
+            GameObject vfx = PoolingController.instance.GetPoolingObject(destructionVFX);
+            vfx.transform.position = transform.position;
+            vfx.transform.rotation = Quaternion.identity;
+            vfx.SetActive(true);
+        }
+        gameObject.SetActive(false);
     }
 }
