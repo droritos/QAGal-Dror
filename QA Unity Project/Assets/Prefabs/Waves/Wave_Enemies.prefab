@@ -138,7 +138,7 @@ GameObject:
   - component: {fileID: 1749848691708473311}
   - component: {fileID: 7235057978948691353}
   m_Layer: 0
-  m_Name: Wave_ShieldEnemies
+  m_Name: Wave_Enemies
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -64,11 +64,14 @@ public class Wave : MonoBehaviour {
             newEnemy.transform.position = enemy.transform.position;
             newEnemy.transform.rotation = Quaternion.identity;
             FollowThePath followComponent = newEnemy.GetComponent<FollowThePath>(); 
-            followComponent.path = pathPoints;         
-            followComponent.speed = speed;        
-            followComponent.rotationByPath = rotationByPath;
-            followComponent.loop = Loop;
-            followComponent.SetPath(); 
+            if (followComponent != null)
+            {
+                followComponent.path = pathPoints;         
+                followComponent.speed = speed;        
+                followComponent.rotationByPath = rotationByPath;
+                followComponent.loop = Loop;
+                followComponent.SetPath(); 
+            }
             Enemy enemyComponent = newEnemy.GetComponent<Enemy>();  
             enemyComponent.shotChance = shooting.shotChance; 
             enemyComponent.shotTimeMin = shooting.shotTimeMin; 
