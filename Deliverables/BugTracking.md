@@ -34,3 +34,15 @@ Depending on screen resolution, the Boss Ship's `horizontalLimit` might push it 
 2. Wait for Boss to spawn.
 3. Observe it moving past the visible edges.
 **Expected:** Boss should dynamically calculate camera boundaries or clamp its `horizontalLimit`.
+
+---
+
+## [BUG] All Entities render behind the Nebula Background
+**Labels:** `bug`, `graphics`, `critical`
+**Description:** 
+When the game runs, the Player, Enemies, Lasers, and VFX (explosions) all render behind the background. This happened because every single `SpriteRenderer` and `ParticleSystem` in the project lacked a defined Sorting Layer or Order, causing Unity to render the massive background image over the gameplay.
+**Steps to Reproduce:**
+1. Start the game.
+2. Observe that no ships, lasers, or explosions are visible.
+3. Check the Hierarchy; the objects exist and are moving, but are completely hidden behind `Nebula Background`.
+**Expected:** The Player, Enemies, Projectiles, and all VFX must explicitly be rendered on a sorting layer in front of the Background layer.
