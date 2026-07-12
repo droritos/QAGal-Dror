@@ -6,118 +6,152 @@ using UnityEngine;
 [System.Serializable]
 public class EnemyWaves 
 {
-    [Tooltip("time for wave generation from the moment the game started")]
+    [Tooltip("time for wave generation from the moment the level started")]
     public float timeToStart;
 
     [Tooltip("Enemy wave's prefab")]
     public GameObject wave;
 }
 
+[System.Serializable]
+public class LevelData
+{
+    [Tooltip("Delay before this level starts (after the previous level is cleared)")]
+    public float delayBeforeLevel = 5f;
+    [Tooltip("Waves for this level")]
+    public EnemyWaves[] enemyWaves;
+}
 #endregion
 
 public class LevelController : MonoBehaviour {
 
-    //Serializable classes implements
-    public EnemyWaves[] enemyWaves; 
-
-    [Header("Level 2 Expansion")]
-    [Tooltip("Enable or disable the second level")]
-    public bool enableLevel2 = true;
+    public List<LevelData> levels = new List<LevelData>();
     
-    [Tooltip("Delay in seconds after Level 1 finishes before Level 2 starts")]
-    public float delayBeforeLevel2 = 5f;
-    
-    [Tooltip("Wave configuration for Level 2 (harder enemies, shields, boss)")]
-    public EnemyWaves[] enemyWavesLevel2;
-
     public GameObject powerUp;
     public float timeForNewPowerup;
     public GameObject[] planets;
     public float timeBetweenPlanets;
     public float planetsSpeed;
-    List<GameObject> planetsList = new List<GameObject>();
+    
+    private List<GameObject> planetsList = new List<GameObject>();
+    private Camera mainCamera;   
 
-    Camera mainCamera;   
+    // Timers & State for Levels
+    private int currentLevelIndex = 0;
+    private float levelTimer = 0f;
+    private int currentWaveIndex = 0;
+    private bool isWaitingForNextLevel = false;
+
+    // Timers for Powerups and Planets
+    private float powerupTimer = 0f;
+    private float planetTimer = 0f;
 
     private void Start()
     {
         mainCamera = Camera.main;
-        StartCoroutine(LevelOrchestrator());
-        StartCoroutine(PowerupBonusCreation());
-        StartCoroutine(PlanetsCreation());
-    }
-
-    IEnumerator LevelOrchestrator()
-    {
-        // --- LEVEL 1 ---
-        float maxLevel1Time = 0f;
-        if (enemyWaves != null)
-        {
-            for (int i = 0; i < enemyWaves.Length; i++) 
-            {
-                StartCoroutine(CreateEnemyWave(enemyWaves[i].timeToStart, enemyWaves[i].wave));
-                if (enemyWaves[i].timeToStart > maxLevel1Time)
-                    maxLevel1Time = enemyWaves[i].timeToStart;
-            }
-        }
-
-        // --- LEVEL 2 ---
-        if (enableLevel2)
-        {
-            // Wait for Level 1 waves to spawn + an extra delay to allow the player to clear them
-            yield return new WaitForSeconds(maxLevel1Time + delayBeforeLevel2 + 10f); // 10s extra clearance time
-            
-            if (enemyWavesLevel2 != null)
-            {
-                for (int i = 0; i < enemyWavesLevel2.Length; i++) 
-                {
-                    StartCoroutine(CreateEnemyWave(enemyWavesLevel2[i].timeToStart, enemyWavesLevel2[i].wave));
-                }
-            }
-        }
-    }
-    
-    //Create a new wave after a delay
-    IEnumerator CreateEnemyWave(float delay, GameObject Wave) 
-    {
-        if (delay != 0)
-            yield return new WaitForSeconds(delay);
-        if (Player.instance != null)
-            Instantiate(Wave);
-    }
-
-    //endless coroutine generating 'levelUp' bonuses. 
-    IEnumerator PowerupBonusCreation() 
-    {
-        while (true) 
-        {
-            yield return new WaitForSeconds(timeForNewPowerup);
-            Instantiate(
-                powerUp,
-                //Set the position for the new bonus: for X-axis - random position between the borders of 'Player's' movement; for Y-axis - right above the upper screen border 
-                new Vector2(
-                    Random.Range(PlayerMoving.instance.borders.minX, PlayerMoving.instance.borders.maxX), 
-                    mainCamera.ViewportToWorldPoint(Vector2.up).y + powerUp.GetComponent<Renderer>().bounds.size.y / 2), 
-                Quaternion.identity
-                );
-        }
-    }
-
-    IEnumerator PlanetsCreation()
-    {
-        //Create a new list copying the arrey
+        
+        // Initialize planets list
         for (int i = 0; i < planets.Length; i++)
         {
             planetsList.Add(planets[i]);
         }
-        yield return new WaitForSeconds(10);
-        while (true)
+        
+        // Set initial delays
+        planetTimer = 10f;
+        powerupTimer = timeForNewPowerup;
+
+        if (levels.Count > 0)
         {
-            ////choose random object from the list, generate and delete it
+            isWaitingForNextLevel = true;
+            levelTimer = levels[0].delayBeforeLevel;
+        }
+    }
+
+    private void Update()
+    {
+        UpdateLevels();
+        UpdatePowerups();
+        UpdatePlanets();
+    }
+
+    private void UpdateLevels()
+    {
+        if (currentLevelIndex >= levels.Count) return;
+
+        if (isWaitingForNextLevel)
+        {
+            levelTimer -= Time.deltaTime;
+            if (levelTimer <= 0)
+            {
+                isWaitingForNextLevel = false;
+                levelTimer = 0f;
+                currentWaveIndex = 0;
+            }
+        }
+        else
+        {
+            // We are actively spawning waves in the current level
+            LevelData currentLevel = levels[currentLevelIndex];
+            
+            // Advance timer forwards for wave spawning logic
+            levelTimer += Time.deltaTime;
+
+            while (currentWaveIndex < currentLevel.enemyWaves.Length && 
+                   levelTimer >= currentLevel.enemyWaves[currentWaveIndex].timeToStart)
+            {
+                if (Player.instance != null)
+                {
+                    GameObject waveObj = PoolingController.instance.GetPoolingObject(currentLevel.enemyWaves[currentWaveIndex].wave);
+                    waveObj.transform.position = currentLevel.enemyWaves[currentWaveIndex].wave.transform.position;
+                    waveObj.transform.rotation = currentLevel.enemyWaves[currentWaveIndex].wave.transform.rotation;
+                    waveObj.SetActive(true);
+                }
+                currentWaveIndex++;
+            }
+
+            // Check if level is complete (all waves spawned)
+            if (currentWaveIndex >= currentLevel.enemyWaves.Length)
+            {
+                currentLevelIndex++;
+                if (currentLevelIndex < levels.Count)
+                {
+                    isWaitingForNextLevel = true;
+                    // Add 10 seconds of extra clearance time for the player to defeat the remaining enemies
+                    levelTimer = levels[currentLevelIndex].delayBeforeLevel + 10f; 
+                }
+            }
+        }
+    }
+
+    private void UpdatePowerups()
+    {
+        powerupTimer -= Time.deltaTime;
+        if (powerupTimer <= 0)
+        {
+            GameObject powerUpObj = PoolingController.instance.GetPoolingObject(powerUp);
+            powerUpObj.transform.position = new Vector2(
+                Random.Range(PlayerMoving.instance.borders.minX, PlayerMoving.instance.borders.maxX), 
+                mainCamera.ViewportToWorldPoint(Vector2.up).y + powerUpObj.GetComponent<Renderer>().bounds.size.y / 2);
+            powerUpObj.transform.rotation = Quaternion.identity;
+            powerUpObj.SetActive(true);
+
+            powerupTimer = timeForNewPowerup;
+        }
+    }
+
+    private void UpdatePlanets()
+    {
+        planetTimer -= Time.deltaTime;
+        if (planetTimer <= 0)
+        {
             int randomIndex = Random.Range(0, planetsList.Count);
-            GameObject newPlanet = Instantiate(planetsList[randomIndex]);
+            
+            GameObject newPlanet = PoolingController.instance.GetPoolingObject(planetsList[randomIndex]);
+            newPlanet.transform.position = planetsList[randomIndex].transform.position;
+            newPlanet.transform.rotation = planetsList[randomIndex].transform.rotation;
+
             planetsList.RemoveAt(randomIndex);
-            //if the list decreased to zero, reinstall it
+            
             if (planetsList.Count == 0)
             {
                 for (int i = 0; i < planets.Length; i++)
@@ -126,8 +160,9 @@ public class LevelController : MonoBehaviour {
                 }
             }
             newPlanet.GetComponent<DirectMoving>().speed = planetsSpeed;
+            newPlanet.SetActive(true);
 
-            yield return new WaitForSeconds(timeBetweenPlanets);
+            planetTimer = timeBetweenPlanets;
         }
     }
 }

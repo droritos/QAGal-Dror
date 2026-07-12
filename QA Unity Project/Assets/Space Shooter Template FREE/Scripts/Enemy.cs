@@ -26,11 +26,27 @@ public class Enemy : MonoBehaviour {
     
     [HideInInspector] public int shotChance; //probability of 'Enemy's' shooting during tha path
     [HideInInspector] public float shotTimeMin, shotTimeMax; //max and min time for shooting from the beginning of the path
+    
+    private float shotTimer;
+    private bool hasShot = false;
     #endregion
 
     private void Start()
     {
-        Invoke("ActivateShooting", Random.Range(shotTimeMin, shotTimeMax));
+        shotTimer = Random.Range(shotTimeMin, shotTimeMax);
+    }
+
+    private void Update()
+    {
+        if (!hasShot)
+        {
+            shotTimer -= Time.deltaTime;
+            if (shotTimer <= 0)
+            {
+                ActivateShooting();
+                hasShot = true;
+            }
+        }
     }
 
     //coroutine making a shot
