@@ -1,14 +1,14 @@
 # Software Test Plan (STP)
 
 ## 1. Introduction
-This document outlines the test plan for the Unity "Space Shooter" QA mini-project. The objective is to verify that all new features (Shields, Boss, Level 2), existing core mechanics, visual rendering, and performance optimizations (Object Pooling) work as intended across multiple platforms.
+This document outlines the test plan for the Unity "Space Shooter" QA mini-project. The objective is to verify that all new features (Shields, Boss, Multi-Level expansion), existing core mechanics, visual rendering, and performance optimizations (Object Pooling) work as intended across multiple platforms.
 
 ## 2. Scope
 The scope includes both automated (TDD) and manual testing for:
 *   Core game mechanics (Player movement, shooting limits, boundary destruction)
 *   Enemy Shield Defense
 *   Boss Ship functionality (Movement, HP)
-*   Level 2 Orchestration
+*   Multi-Level Orchestration
 *   Rendering order & Visual Effects (VFX)
 *   Universal Input for Mobile/WebGL Touch controls
 
@@ -20,7 +20,7 @@ Testing will be performed on the following platforms:
 
 ## 4. Test Strategy
 *   **Unit/Integration Testing**: Handled via Unity Test Framework (Automated). Tests are stored in `Assets/QA_Assignment_Tests`. Executed continuously via GameCI GitHub Actions (CI/CD).
-*   **Functional Testing**: Manual gameplay testing to ensure game loop (Level 1 -> Level 2 -> Boss) functions without soft-locks.
+*   **Functional Testing**: Manual gameplay testing to ensure game loop (Level 1 -> Level 2 -> Level 3 -> Boss) functions without soft-locks.
 *   **Non-Functional Testing**: Checking frame rates (FPS) on Mobile and memory leaks over multiple levels via the Object Pooling tests.
 *   **Accessibility Testing**: Ensuring the game is playable by users with visual or motor impairments (e.g., auto-fire capabilities).
 
